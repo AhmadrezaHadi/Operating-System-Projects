@@ -32,8 +32,8 @@ Simply we added a global variable in __readcount.h__ and initialized it in __sys
       return global_read_counter;         // Global counter for read() syscall
     }
 #### Other changes:
-> Created __readcount.h__ and added __global_read_counter__.
-> Added __SYSCALL(getreadcount)__ in usys.S
-> Added new syscall in __user.h__ in order to be accessible by other user programs
-> Added new argument to syscalls function array in __syscall.c__
-> Inculded __getreadcount()__ syscall in __syscall.c__
+- Created __readcount.h__ and added __global_read_counter__.
+- Added __SYSCALL(getreadcount)__ in usys.S
+- Added new syscall in __user.h__ in order to be accessible by other user programs
+- Added new argument to syscalls function array in __syscall.c__
+- Inculded __getreadcount()__ syscall in __syscall.c__
