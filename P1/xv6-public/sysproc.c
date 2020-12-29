@@ -6,7 +6,6 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-#include "readcount.h"
 
 
 int
@@ -79,11 +78,13 @@ sys_sleep(void)
   return 0;
 }
 
-int
-sys_getreadcount(void)
-{
-  return global_read_counter;
-}
+// int
+// sys_getreadcount(void)
+// {
+//   return global_read_counter;
+// }
+
+
 // return how many clock tick interrupts have occurred
 // since start.
 int

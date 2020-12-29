@@ -28,6 +28,7 @@ OBJS = \
 	vectors.o\
 	vm.o\
 
+
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
 
@@ -171,6 +172,7 @@ UPROGS=\
 	_forktest\
 	_grep\
 	_init\
+	_rdc\
 	_kill\
 	_ln\
 	_ls\

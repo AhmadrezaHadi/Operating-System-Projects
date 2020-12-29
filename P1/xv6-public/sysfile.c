@@ -16,6 +16,13 @@
 #include "file.h"
 #include "fcntl.h"
 
+int global_read_counter = 0;
+
+struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} p1table;
+
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -74,9 +81,19 @@ sys_read(void)
   int n;
   char *p;
 
+  acquire(&p1table.lock);
+  global_read_counter = global_read_counter + 1;
+  release(&p1table.lock);
+
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
   return fileread(f, p, n);
+}
+
+int 
+sys_getreadcount(void)
+{
+  return global_read_counter;
 }
 
 int

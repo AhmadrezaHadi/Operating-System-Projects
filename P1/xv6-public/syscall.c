@@ -6,9 +6,6 @@
 #include "proc.h"
 #include "x86.h"
 #include "syscall.h"
-#include "readcount.h"
-
-int global_read_counter = 0;
 
 
 // User code makes a system call with INT T_SYSCALL.
@@ -141,9 +138,7 @@ syscall(void)
   struct proc *curproc = myproc();
 
   num = curproc->tf->eax;
-  if(num == SYS_read){
-    global_read_counter = global_read_counter + 1;
-  }
+  
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();
   } else {
