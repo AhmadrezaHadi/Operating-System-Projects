@@ -18,6 +18,8 @@ static ucontext_t main_cntx = {0};
 
 static green_t main_green = {&main_cntx, NULL, NULL, NULL, NULL, NULL, FALSE};
 
+green_t * head = &main_green;
+
 static green_t * running = &main_green;
 
 
@@ -33,13 +35,36 @@ void init(){
 // this functions is mapped to every Context
 void green_thread(){
 	green_t * this=running;
-	// call target function and save its result
-	// place waiting (joining) thread in ready queue
-	// save result of execution and zombie status
-	// find the next thread to run and write its address to next variable
 
+	// call target function and save its result
+	// ====================================
+	this->retval = (*this->fun)(this->arg);
+	// ====================================
+
+	// place waiting (joining) thread in ready queue
+	// ====================================
+	green_t * temp = head;
+	while (temp)
+	{
+		if(temp->join == this)
+		{
+			enQueue(ready_queue, temp);
+		}
+		temp = temp->next;
+	}
+	// ====================================
+
+	// save result of execution and zombie status
+	// ====================================
+	this->zombie = 1;
+	// ====================================
+
+	// find the next thread to run and write its address to next variable
+	// ====================================
+	green_t* next = deQueue(ready_queue);
 	running =next;
 	setcontext(next->context);
+	// ====================================
 }
 
 // will create a new green thread
@@ -111,14 +136,38 @@ int green_yield(){
 // waits for specefied thread till it finishes and get result value
 int green_join(green_t * thread ,void ** res) {
 	green_t * susp = running ;
+
 	// check if target thread has finished
-	// add as joining thread
-	// select the next thread for execution
-	running = next ;
-	// save current state into susp->context and switch to next->context
-	
-	// collect result
-	// free context
-	free(thread->context);
-	return 0 ;
+	// ====================================
+		if (thread->zombie == 0)
+		{
+			// add as joining thread
+			// ====================================
+			susp->join = thread;
+			// ====================================
+
+			// select the next thread for execution
+			// ====================================
+			green_t* next = deQueue(ready_queue);
+			running = next ;
+			// ====================================
+
+			// save current state into susp->context and switch to next->context
+			// ====================================
+			swapcontext(susp->context, next->context);
+			// ====================================
+				
+			// collect result
+			// ====================================
+			*res = thread->retval;
+			// ====================================
+
+			// free context
+			// ====================================
+			free(thread->context);
+			// ====================================
+
+		}
+	// ====================================
+	return 0;
 }
