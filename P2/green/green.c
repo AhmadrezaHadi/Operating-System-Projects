@@ -38,13 +38,13 @@ void green_thread(){
 
 	// call target function and save its result
 	// ====================================
-	this->retval = (*this->fun)(this->arg);
+	void * result = (*this->fun)(this->arg);
 	// ====================================
 
 	// place waiting (joining) thread in ready queue
 	// ====================================
 	green_t * temp = head;
-	while (temp)
+	while (temp != NULL)
 	{
 		if(temp->join == this)
 		{
@@ -56,6 +56,7 @@ void green_thread(){
 
 	// save result of execution and zombie status
 	// ====================================
+	this->retval = result;
 	this->zombie = 1;
 	// ====================================
 
@@ -74,7 +75,6 @@ int green_create(green_t *new ,void *(*fun)(void *),void *arg) {
 	// intialize cntx
 	// ====================================
 	getcontext(cntx);
-	cntx->uc_link = NULL;
 			//should I initialize rest?
 	// ====================================
 	
@@ -139,35 +139,35 @@ int green_join(green_t * thread ,void ** res) {
 
 	// check if target thread has finished
 	// ====================================
-		if (thread->zombie == 0)
-		{
-			// add as joining thread
-			// ====================================
-			susp->join = thread;
-			// ====================================
+	if (thread->zombie == 0)
+	{
+		// add as joining thread
+		// ====================================
+		susp->join = thread;
+		// ====================================
 
-			// select the next thread for execution
-			// ====================================
-			green_t* next = deQueue(ready_queue);
-			running = next ;
-			// ====================================
+		// select the next thread for execution
+		// ====================================
+		green_t* next = deQueue(ready_queue);
+		running = next ;
+		// ====================================
 
-			// save current state into susp->context and switch to next->context
-			// ====================================
-			swapcontext(susp->context, next->context);
-			// ====================================
-				
-			// collect result
-			// ====================================
-			*res = thread->retval;
-			// ====================================
+		// save current state into susp->context and switch to next->context
+		// ====================================
+		swapcontext(susp->context, next->context);
+		// ====================================
+		
+	}	
+	// ====================================
 
-			// free context
-			// ====================================
-			free(thread->context);
-			// ====================================
+	// collect result
+	// ====================================
+	*res = thread->retval;
+	// ====================================
 
-		}
+	// free context
+	// ====================================
+	free(thread->context);
 	// ====================================
 	return 0;
 }
