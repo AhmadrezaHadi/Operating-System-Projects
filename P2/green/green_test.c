@@ -36,7 +36,7 @@ void * test(void * arg){
 	int loop = args_struct.max_num;
 	int p=args_struct.p;
 	int *sum=(int *)malloc(sizeof(int));
-	*sum = 0;
+	// *sum = 0;
 	//printf("\nsum : %d",*sum);
 	while ( loop > 0 ){
 		printf("thread #%d : %d\n" , p , loop );
@@ -54,7 +54,6 @@ int main (int argc , char * argv[]){
 	green_t g[3];
 	int thread_args[3]={2,8,5};
 	my_arg_t a[3];
-	printf("\n");
 	srand(time(0));
 	for(int i=0;i<3;i++){
 		a[i].p=i;
