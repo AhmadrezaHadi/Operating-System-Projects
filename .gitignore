@@ -1,1 +1,4 @@
 .vscode
+*.o
+green_test
+posix_test
