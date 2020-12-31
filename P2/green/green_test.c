@@ -36,15 +36,14 @@ void * test(void * arg){
 	int loop = args_struct.max_num;
 	int p=args_struct.p;
 	int *sum=(int *)malloc(sizeof(int));
-	// *sum = 0;
-	//printf("\nsum : %d",*sum);
+	*sum = 0;
 	while ( loop > 0 ){
 		printf("thread #%d : %d\n" , p , loop );
 		
 		(*sum)+=loop;
 		loop--;
 		usleep(100000);
-		green_yield();
+		// green_yield();
 	}
 	printf("thread #%d finished\n",p);
 

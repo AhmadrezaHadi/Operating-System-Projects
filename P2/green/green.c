@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <sys/time.h>
 
 #include "green.h"
 #include "queue.h"
@@ -16,6 +17,8 @@
 #define TRUE 1
 
 #define STACK_SIZE 4*1024
+#define INTERVAL_USEC 100
+#define INTERVAL_SEC 0
 
 static ucontext_t main_cntx = {0};
 
@@ -36,24 +39,23 @@ void time_handler(int signo)
     green_yield();
 }
 
-// this function is called once program loads into memory regurdless of what function is called!
+// this function is called once program loads into memory regardless of what function is called!
 static void init( ) __attribute__((constructor));
 void init(){
 	getcontext(&main_cntx);
 	ready_queue = createQueue();
-    // pid_t parent;
-    // signal(SIGUSR1, &time_handler);
-    // parent = getpid();
-    // if (fork() == 0)
-    // {
-    //     while(1)
-    //     {
-    //         sleep(0.02);
-    //         kill(parent, SIGUSR1);
-    //     }
-    //     exit(0);
-    // }
+    
+    signal(SIGALRM, &time_handler);
+
+    struct itimerval t1;
+    t1.it_interval.tv_sec = INTERVAL_SEC;
+    t1.it_interval.tv_usec = INTERVAL_USEC;
+    t1.it_value.tv_sec = INTERVAL_SEC;  
+    t1.it_value.tv_usec = INTERVAL_USEC;
+    setitimer(ITIMER_REAL, &t1, NULL);
 }
+
+
 // this functions is mapped to every Context
 void green_thread(){
 	green_t * this=running;
@@ -125,7 +127,7 @@ int green_yield(){
 	// select the next thread for execution
     // ===========================
     green_t * next = deQueue(ready_queue);
-	running = next ;
+	running = next;
     // ===========================
 	// save current state into susp->context and switch to next->context
     // ===========================
