@@ -45,8 +45,10 @@ void init(){
 	getcontext(&main_cntx);
 	ready_queue = createQueue();
     
+    // assign signal to function
     signal(SIGALRM, &time_handler);
 
+    // setting timer
     struct itimerval t1;
     t1.it_interval.tv_sec = INTERVAL_SEC;
     t1.it_interval.tv_usec = INTERVAL_USEC;
@@ -60,45 +62,31 @@ void init(){
 void green_thread(){
 	green_t * this=running;
 	// call target function and save its result
-    // ===========================
     void* result = (*this->fun)(this->arg);
-    // ===========================
 	// place waiting (joining) thread in ready queue
-    // ===========================
     for(green_t * temp = head; temp != NULL; temp = temp->next)
         if (temp->join == this)
             enQueue(ready_queue, temp);
-    // ===========================
 	// save result of execution and zombie status
-    // ===========================
     this->zombie = 1;
     this->retval = result;
-    // ===========================
 	// find the next thread to run and write its address to next variable
-    // ===========================
     green_t* next = deQueue(ready_queue);
 	running =next;
 	setcontext(next->context);
-    // ===========================
 }
 
 // will create a new green thread
 int green_create(green_t *new ,void *(*fun)(void *),void *arg) {
 	ucontext_t * cntx = (ucontext_t *) malloc(sizeof(ucontext_t));
 	// intialize cntx
-    // ===========================
     getcontext(cntx);
-    // ===========================
 	void * stack = malloc(STACK_SIZE);
 	// assign allocated stack to cntx
-    // ===========================
     cntx->uc_stack.ss_size = STACK_SIZE;
     cntx->uc_stack.ss_sp = stack;
-    // ===========================
 	// assign green_thread function to cntx
-    // ===========================
     makecontext(cntx, (void(*) (void)) green_thread,0);
-    // ===========================
 
 	new->context = cntx ;
 	new->fun = fun ;
@@ -121,18 +109,12 @@ int green_create(green_t *new ,void *(*fun)(void *),void *arg) {
 int green_yield(){
 	green_t * susp = running ;
 	// add susp to ready queue
-    // ===========================
     enQueue(ready_queue, susp);
-    // ===========================
 	// select the next thread for execution
-    // ===========================
     green_t * next = deQueue(ready_queue);
 	running = next;
-    // ===========================
 	// save current state into susp->context and switch to next->context
-    // ===========================
     swapcontext(susp->context, next->context);
-    // ===========================
 	return 0;
 }
 
@@ -140,7 +122,6 @@ int green_yield(){
 int green_join(green_t * thread ,void ** res) {
 	green_t * susp = running ;
 	// check if target thread has finished
-    // ===========================
     if (!thread->zombie)
     {
 	    // add as joining thread
@@ -151,12 +132,9 @@ int green_join(green_t * thread ,void ** res) {
 	    // save current state into susp->context and switch to next->context
         swapcontext(susp->context, next->context);
     }
-    // ===========================
 	
 	// collect result
-    // ===========================
     *res = thread->retval;
-    // ===========================
 	// free context
 	free(thread->context);
 	return 0;
